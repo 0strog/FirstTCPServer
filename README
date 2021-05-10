@@ -1,2 +1,12 @@
-Server writing text received from tcp connection.
+A TCP server that writes data to the file "MyServFile.tmp" (if the file does not exist, it is created).
 
+The server writes to the system log (/var/log/syslog) process name "mytcpserv" and information about:
+receiving the SIGTERM and SIGHUP signals,
+socket creation error,
+socket binding error,
+accept socket connection failed,
+receive data failed,
+closing socket connection,
+record file creation error
+
+Server port: 8080

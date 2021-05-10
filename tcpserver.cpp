@@ -21,7 +21,6 @@ const int client_buffer_size_max = 1024;
 
 void TCPServer::sighandler(int signal)
 {
-    syslog(LOG_NOTICE, "HANDLER!!!!!\n");
     if(signal == SIGTERM)
     {
         syslog(LOG_NOTICE, "receive terminate signal\n");
@@ -80,18 +79,18 @@ void TCPServer::mainloop()
     sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if(sockfd == -1)
     {
-        syslog(LOG_NOTICE, "[SOCKET] No connection\n");
+        syslog(LOG_NOTICE, "[SOCKET] Doesn't create\n");
         exit(1);
     }
 
     memset(&sa, 0, sizeof(sa));
     sa.sin_family = AF_INET;
     sa.sin_addr.s_addr = htonl(INADDR_ANY);
-    sa.sin_port = htons(8800);
+    sa.sin_port = htons(8080);
     result = bind(sockfd, (struct sockaddr *)&sa, sizeof(sa));
     if(result == -1)
     {
-        syslog(LOG_NOTICE, "[BIND] no connection\n");
+        syslog(LOG_NOTICE, "[BIND] Fail\n");
         exit(2);
     }
 
@@ -110,35 +109,32 @@ void TCPServer::mainloop()
             result = recv(sock, buf, client_buffer_size_max, 0);
             if (result == -1)
             {
-                syslog(LOG_NOTICE, "recv failed: %d\n", result);  // ошибка получения данных
+                syslog(LOG_NOTICE, "Recv failed: %d\n", result);  // ошибка получения данных
                 close(sock);
                 break;
             }
             else if (result == 0)
             {
-                syslog(LOG_NOTICE, "connection closed...\n");  // соединение закрыто клиентом
+                syslog(LOG_NOTICE, "Connection has been closed by client\n");  // соединение закрыто клиентом
                 break;
             }
             writeToFile(buf);
-            send(sock, buf, result, 0);
         }
         close(sock);
     }
-    close(sockfd);
-    syslog(LOG_NOTICE, "Connect closed\n");
 }
 
 void TCPServer::writeToFile(char buf[])
 {
-    char pathToLog[512];
-    sprintf(pathToLog, "%s/MyTCPServLog", getenv("HOME"));
+    char pathToFile[512];
+    sprintf(pathToFile, "%s/MyServFile.tmp", getenv("HOME"));
 
-    std::ofstream f(pathToLog, std::ios::app);
+    std::ofstream f(pathToFile, std::ios::app);
     if(f.is_open())
     {
         f<< buf <<std::endl;
         f.close();
     }
     else
-        syslog(LOG_NOTICE, "[LOG] Logfile doesn't open");
+        syslog(LOG_NOTICE, "[FILE] File doesn't open");
 }
